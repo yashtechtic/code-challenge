@@ -3,7 +3,7 @@ import CustomSelect from "@/components/CustomSelect";
 import { useNotification } from "@/components/notification";
 import { GET_STAR_WARS_MOVIES } from "@/quries/movies";
 import { useQuery } from "@apollo/client";
-import { Button, Card, Input, Spin } from "antd";
+import { Button, Card, Input, Spin, Typography } from "antd";
 import { ErrorMessage, Form, Formik } from "formik";
 import { useEffect, useState } from "react";
 import * as Yup from "yup";
@@ -21,6 +21,7 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false);
   const notificationContext = useNotification();
   const handleNotifications: any = notificationContext?.handleNotifications;
+  const { Text } = Typography;
   const handleSubmit = async (values: any) => {
     setSubmitted(true);
   };
@@ -55,21 +56,28 @@ export default function Home() {
               validationSchema={validationSchema}
               onSubmit={handleSubmit}
             >
-              {({ values, setFieldValue, errors }) => {
-                console.log("errors :>> ", errors);
+              {({ values, setFieldValue, errors, touched }) => {
                 return (
                   <Form className="">
                     <>
-                      {Object.keys(errors).length !== 0 && (
-                        <div className="flex flex-col error pb-4">
-                          <div>
-                            <ErrorMessage name="firstName" />
+                      {Object.keys(errors).length > 0 &&
+                        touched.firstName &&
+                        touched.lastName &&(
+                          <div className="flex flex-col error pb-4">
+                            <div>
+                              <Text type="danger" className="flex text-left">
+                                {" "}
+                                <ErrorMessage name="firstName" />
+                              </Text>
+                            </div>
+                            <div>
+                              <Text type="danger" className="flex text-left">
+                                {" "}
+                                <ErrorMessage name="lastName" />
+                              </Text>
+                            </div>
                           </div>
-                          <div>
-                            <ErrorMessage name="lastName" />
-                          </div>
-                        </div>
-                      )}
+                        )}
                       <div className="flex flex-col md:flex-row">
                         <div className="basis-0 md:basis-1/2 md:pr-2 pb-4">
                           <CustomInput

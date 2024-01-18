@@ -24,6 +24,12 @@ body {
   font-family: "Roboto" !important;
 }
 
+@media (max-width: 767px) {
+  body {
+    background: #fff;
+  }
+}
+
 .error {
   color: #ff0000;
   font-size: 16px;
@@ -44,7 +50,8 @@ body {
   width: 100%;
   text-align: center;
 }
-.loader{
+
+.loader {
   position: absolute;
   z-index: 99;
   top: 50%;
