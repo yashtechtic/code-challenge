@@ -22,7 +22,6 @@ export default function Home() {
   const notificationContext = useNotification();
   const handleNotifications: any = notificationContext?.handleNotifications;
   const handleSubmit = async (values: any) => {
-    console.log("values :>> ", values);
     setSubmitted(true);
   };
 
@@ -39,16 +38,14 @@ export default function Home() {
     <>
       <div className="flex justify-center items-center h-screen">
         <Card
-          className={`w-full md:!w-[800px] md:!h-[600px] h-screen relative px-[32px] py-[16px] rounded-none md:rounded-lg ${
-            loading ? "backdrop-blur-md" : "opacity-100"
-          }`}
+          className={`w-full md:!w-[800px] md:!h-[600px] h-screen relative px-[32px] py-[16px] rounded-none md:rounded-lg `}
         >
           {loading && <Spin size="large" className="loader" />}
           <div className="text-[24px] font-[900] text-[#1E5167] leading-none pb-8">
             My form
           </div>
           {submitted ? (
-            <div className="absolute-center text-[16px]">
+            <div className="absolute-center md:text-[16px]">
               Thanks for submitting the form!
             </div>
           ) : (
