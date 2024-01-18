@@ -1,118 +1,138 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import CustomInput from "@/components/CustomInput";
+import CustomSelect from "@/components/CustomSelect";
+import { useNotification } from "@/components/notification";
+import { GET_STAR_WARS_MOVIES } from "@/quries/movies";
+import { useQuery } from "@apollo/client";
+import { Button, Card, Input, Spin } from "antd";
+import { ErrorMessage, Form, Formik } from "formik";
+import { useEffect, useState } from "react";
+import * as Yup from "yup";
 
-const inter = Inter({ subsets: ['latin'] })
-
+const validationSchema = Yup.object().shape({
+  firstName: Yup.string().required("You need to enter a first name."),
+  lastName: Yup.string().required("You need to enter a last name."),
+});
+const initialValues = {
+  firstName: "",
+  lastName: "",
+  movie: "",
+};
 export default function Home() {
+  const [submitted, setSubmitted] = useState(false);
+  const notificationContext = useNotification();
+  const handleNotifications: any = notificationContext?.handleNotifications;
+  const handleSubmit = async (values: any) => {
+    console.log("values :>> ", values);
+    setSubmitted(true);
+  };
+
+  const { loading, error, data } = useQuery(GET_STAR_WARS_MOVIES);
+
+  useEffect(() => {
+    if (error) {
+      const errorMessage = error.message || "An error occurred.";
+      handleNotifications("error", "Error", errorMessage, 555);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error]);
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <>
+      <div className="flex justify-center items-center h-screen">
+        <Card
+          className={`w-full md:!w-[800px] md:!h-[600px] h-screen relative px-[32px] py-[16px] rounded-none md:rounded-lg ${
+            loading ? "backdrop-blur-md" : "opacity-100"
+          }`}
+        >
+          {loading && <Spin size="large" className="loader" />}
+          <div className="text-[24px] font-[900] text-[#1E5167] leading-none pb-8">
+            My form
+          </div>
+          {submitted ? (
+            <div className="absolute-center text-[16px]">
+              Thanks for submitting the form!
+            </div>
+          ) : (
+            <Formik
+              enableReinitialize
+              initialValues={initialValues}
+              validationSchema={validationSchema}
+              onSubmit={handleSubmit}
+            >
+              {({ values, setFieldValue, errors }) => {
+                console.log("errors :>> ", errors);
+                return (
+                  <Form className="">
+                    <>
+                      {Object.keys(errors).length !== 0 && (
+                        <div className="flex flex-col error pb-4">
+                          <div>
+                            <ErrorMessage name="firstName" />
+                          </div>
+                          <div>
+                            <ErrorMessage name="lastName" />
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex flex-col md:flex-row">
+                        <div className="basis-0 md:basis-1/2 md:pr-2 pb-4">
+                          <CustomInput
+                            defaultValue={values.firstName}
+                            label="First Name"
+                            type="text"
+                            name="firstName"
+                            as={Input}
+                            required
+                          />
+                        </div>
+                        <div className="basis-0 md:basis-1/2 md:pl-2 pb-4">
+                          <CustomInput
+                            defaultValue={values.lastName}
+                            label="Last Name"
+                            type="text"
+                            name="lastName"
+                            as={Input}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col md:flex-row">
+                        <div className="basis-0 md:basis-1/2 md:pr-2">
+                          <CustomSelect
+                            defaultValue={values.movie}
+                            label="Favorite Star Wars movie"
+                            name="movie"
+                            id="movie"
+                            placeholder="Favorite Star Wars movie"
+                            options={data?.allFilms.films.map(
+                              (option: any) => ({
+                                value: option.title,
+                                label: option.title,
+                              })
+                            )}
+                            onSelect={(value) => {
+                              setFieldValue("movie", value);
+                            }}
+                            // error={<ErrorMessage name="dietary_preference" />}
+                          />
+                        </div>
+                      </div>
+                      <div className="absolute right-[32px] bottom-[16px] ">
+                        <Button
+                          type="primary"
+                          htmlType="submit"
+                          className="bg-[#00B3FF] hover:!bg-[#00B3FF]"
+                        >
+                          Submit
+                        </Button>
+                      </div>
+                    </>
+                  </Form>
+                );
+              }}
+            </Formik>
+          )}
+        </Card>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    </>
+  );
 }
